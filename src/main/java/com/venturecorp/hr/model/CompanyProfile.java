@@ -26,4 +26,6 @@ public class CompanyProfile {
     private String companyCode;
     private Double latitude;
     private Double longitude;
+    private String timezoneString;
+    private String currenzyString;
 }

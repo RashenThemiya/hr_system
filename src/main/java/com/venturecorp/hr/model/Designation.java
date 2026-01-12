@@ -15,6 +15,18 @@ public class Designation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long designationId;
 
+    @Column(nullable = false)
     private String designationName;
+
     private String hierarchyLevel;
+
+    // 🔗 Company (REQUIRED)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private CompanyProfile company;
+
+    // 🔗 Branch (REQUIRED)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
+    private Branch branch;
 }

@@ -15,9 +15,21 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long departmentId;
 
+    @Column(nullable = false)
     private String departmentName;
 
-    @ManyToOne
-    @JoinColumn(name = "manager_id")
-    private Employee manager; // can be null
+    // 🔗 Company (REQUIRED)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private CompanyProfile company;
+
+    // 🔗 Branch (REQUIRED)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
+    private Branch branch;
+
+    // 🔗 Department Manager (OPTIONAL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id", nullable = true)
+    private Employee manager;
 }

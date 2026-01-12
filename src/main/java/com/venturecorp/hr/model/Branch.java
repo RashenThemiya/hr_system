@@ -27,4 +27,10 @@ public class Branch {
     private String address;
     private String phoneNumber;
     private String remark;
+    private String branchCode;
+    private String email;
+    private String logoLink;
+    private String managerName;
+    private String timezoneString;
+    private String currenzyString;
 }
