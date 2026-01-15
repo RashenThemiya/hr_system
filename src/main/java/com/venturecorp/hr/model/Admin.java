@@ -15,8 +15,10 @@ import java.util.stream.Collectors;
 public class Admin {
 
     public enum Role {
-        PREMIUMADMIN,
         SUPERADMIN,
+        PREMIUMADMIN,
+        COPMANYADMIN,
+        BRANCADMIN,
         MANAGER,
         ADMINL1,
         ADMINL2,
@@ -32,24 +34,35 @@ public class Admin {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ===== AUTH =====
     @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    // Store roles as comma-separated string
-    @Column(name = "roles")
+    // Store roles as comma-separated values
+    @Column(nullable = false)
     private String roles;
 
+    // ===== HR LINK =====
     private Long employeeId;
 
-    // ✅ New status column
+    // ===== MULTI TENANCY =====
+    @Column(nullable = true)
+    private Long companyId;   // NULL for SUPERADMIN
+
+    @Column(nullable = true)
+    private Long branchId;    // NULL for company-level admins
+
+    // ===== STATUS =====
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
 
-    // Helper: roles string -> Set<Role>
+    // ===== Helpers =====
+
+    // Convert roles string -> Set<Role>
     public Set<Role> getRoleSet() {
         if (roles == null || roles.isEmpty()) return Set.of();
         return Arrays.stream(roles.split(","))
@@ -58,7 +71,7 @@ public class Admin {
                 .collect(Collectors.toSet());
     }
 
-    // Helper: Set<Role> -> roles string
+    // Convert Set<Role> -> roles string
     public void setRoleSet(Set<Role> roleSet) {
         this.roles = roleSet.stream()
                 .map(Enum::name)

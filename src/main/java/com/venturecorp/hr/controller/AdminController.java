@@ -18,34 +18,75 @@ public class AdminController {
     @Autowired
     private AdminRepository adminRepository;
 
-    // Use BCrypt for password hashing
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-   @PostMapping("/create")
-@PreAuthorize("hasAnyRole('SUPERADMIN','PREMIUMADMIN')")
-public Admin createAdmin(@RequestParam String username,
-                         @RequestParam String password,
-                         @RequestParam Set<String> roles) {
+    // ================= CREATE ADMIN =================
+    @PostMapping("/create")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','PREMIUMADMIN')")
+    public Admin createAdmin(
+            @RequestParam String username,
+            @RequestParam String password,
+            @RequestParam Set<String> roles,
+            @RequestParam(required = false) Long companyId,
+            @RequestParam(required = false) Long branchId
+    ) {
 
-    // Convert String roles -> Admin.Role
-    Set<Admin.Role> roleEnums = roles.stream()
-            .map(String::toUpperCase)
-            .map(Admin.Role::valueOf)
-            .collect(Collectors.toSet());
+        // Convert String roles -> Enum
+        Set<Admin.Role> roleEnums = roles.stream()
+                .map(String::toUpperCase)
+                .map(Admin.Role::valueOf)
+                .collect(Collectors.toSet());
 
-    Admin admin = Admin.builder()
-            .username(username)
-            .password(passwordEncoder.encode(password)) // Encrypt password
-            .status(Admin.Status.ACTIVE)                 // ✅ Default ACTIVE
-            .build();
+        // 🔐 Validate company/branch based on role
+        validateCompanyBranch(roleEnums, companyId, branchId);
 
-    admin.setRoleSet(roleEnums);
+        Admin admin = Admin.builder()
+                .username(username)
+                .password(passwordEncoder.encode(password))
+                .status(Admin.Status.ACTIVE)
+                .companyId(companyId)
+                .branchId(branchId)
+                .build();
 
-    return adminRepository.save(admin);
-}
-    // Get all admins
+        admin.setRoleSet(roleEnums);
+
+        return adminRepository.save(admin);
+    }
+
+    // ================= GET ALL ADMINS =================
     @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','PREMIUMADMIN')")
     public List<Admin> getAllAdmins() {
         return adminRepository.findAll();
+    }
+
+    // ================= VALIDATION =================
+    private void validateCompanyBranch(Set<Admin.Role> roles,
+                                       Long companyId,
+                                       Long branchId) {
+
+        if (roles.contains(Admin.Role.SUPERADMIN)
+                || roles.contains(Admin.Role.PREMIUMADMIN)) {
+
+            if (companyId != null || branchId != null) {
+                throw new IllegalArgumentException(
+                        "SUPERADMIN / PREMIUMADMIN cannot have companyId or branchId");
+            }
+            return;
+        }
+
+        if (roles.contains(Admin.Role.COPMANYADMIN)) {
+            if (companyId == null) {
+                throw new IllegalArgumentException(
+                        "COMPANYADMIN requires companyId");
+            }
+            return;
+        }
+
+        // Branch-level roles
+        if (companyId == null || branchId == null) {
+            throw new IllegalArgumentException(
+                    "Branch-level admins require both companyId and branchId");
+        }
     }
 }

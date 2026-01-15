@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: hr-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: hr_db
+      MYSQL_USER: hruser
+      MYSQL_PASSWORD: hrpassword
+    ports:
+      - "3307:3306"   # host:container
+    networks:
+      - hr-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  hr-app:
+    image: mhartvishwajith448/hr-app:latest
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hr_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: hruser
+      SPRING_DATASOURCE_PASSWORD: hrpassword
+    ports:
+      - "8080:8080"
+    networks:
+      - hr-network
+
+networks:
+  hr-network:
+    driver: bridge

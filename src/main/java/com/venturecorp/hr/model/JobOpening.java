@@ -24,12 +24,27 @@ public class JobOpening {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 🔑 REQUIRED for filtering
+    @Column(nullable = false)
+    private Long companyId;
+
+    @Column(nullable = false)
+    private Long branchId;
+
     private String jobTopic;
     private String postImageLink;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
     private String experience;
+
+    @Column(columnDefinition = "TEXT")
     private String responsibility;
+
+    @Column(columnDefinition = "TEXT")
     private String qualification;
+
     private LocalDate closingDate;
 
     @Enumerated(EnumType.STRING)
@@ -38,7 +53,7 @@ public class JobOpening {
     @Enumerated(EnumType.STRING)
     private Level level;
 
-    private String linkedin; // YES/NO
-    private String topJob; // YES/NO
+    private String linkedin; // YES / NO
+    private String topJob;   // YES / NO
     private String link;
 }
